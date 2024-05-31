@@ -8,11 +8,13 @@ public class CharacterMovement : MonoBehaviour
     public float moveSpeed = 5f;
     public float rotateSpeed = 100f; // Added for rotation with mouse
     Vector3 eulerAngles;
+    public int checkPoint = 0;
     float rotationY;
     public bool isWKey = false;
+    public bool isStop;
 
     private CharacterController controller;
-    private string playerName,navigationType;
+    private string playerName, navigationType;
 
     void Start()
     {
@@ -23,17 +25,8 @@ public class CharacterMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        LogPlayerData();
-    }
-
-    void OnMouseDown()
-    {
-        Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ", mouse: click, time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
-    }
-
-    void OnMouseUp()
-    {
-        Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ", mouse: release, time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+        //LogPlayerData();
+        LogPlayerData(navigationType, playerName.ToString(), this.gameObject.transform.position.x, this.gameObject.transform.position.z, rotationY, checkPoint);
     }
 
     void Update()
@@ -59,13 +52,32 @@ public class CharacterMovement : MonoBehaviour
         eulerAngles = rotation.eulerAngles;
         rotationY = eulerAngles.y;
 
+        if (Input.GetButtonDown("Fire1"))
+        {
+            logData(navigationType, playerName.ToString(), "m0", "p");
+        }
+        if (Input.GetButtonUp("Fire1"))
+        {
+            logData(navigationType, playerName.ToString(), "m0", "r");
+        }
+
+        if (Input.GetButtonDown("Fire2"))
+        {
+            logData(navigationType, playerName.ToString(), "m1", "p");
+        }
+        if (Input.GetButtonUp("Fire2"))
+        {
+            logData(navigationType, playerName.ToString(), "m1", "r");
+        }
+
         //GetKeyDown
         if (Input.GetKeyDown(KeyCode.W))
         {
             //0.03 secs
-            if(!isWKey)
+            // navigationtype,player,key,p or r,time
+            if (!isWKey)
             {
-                Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",key w pressed, rotation.y:"+rotationY+", time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+                logData(navigationType, playerName.ToString(), "w", "p");
                 isWKey = true;
             }
         }
@@ -75,7 +87,7 @@ public class CharacterMovement : MonoBehaviour
             //Release เท่านั้น
             if (isWKey)
             {
-                Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",key w released, rotation.y:"+rotationY+", time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+                logData(navigationType, playerName.ToString(), "w", "r");
                 isWKey = false;
             }
         }
@@ -83,9 +95,9 @@ public class CharacterMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.A))
         {
             //0.03 secs
-            if(!isWKey)
+            if (!isWKey)
             {
-                Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",key a pressed, rotation.y:"+rotationY+", time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+                logData(navigationType, playerName.ToString(), "a", "p");
                 isWKey = true;
             }
         }
@@ -95,7 +107,7 @@ public class CharacterMovement : MonoBehaviour
             //Release เท่านั้น
             if (isWKey)
             {
-                Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",key a released, rotation.y:"+rotationY+", time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+                logData(navigationType, playerName.ToString(), "a", "r");
                 isWKey = false;
             }
         }
@@ -103,9 +115,9 @@ public class CharacterMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.S))
         {
             //0.03 secs
-            if(!isWKey)
+            if (!isWKey)
             {
-                Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",key s pressed, rotation.y:"+rotationY+", time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+                logData(navigationType, playerName.ToString(), "s", "p");
                 isWKey = true;
             }
         }
@@ -115,7 +127,7 @@ public class CharacterMovement : MonoBehaviour
             //Release เท่านั้น
             if (isWKey)
             {
-                Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",key s released, rotation.y:"+rotationY+", time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+                logData(navigationType, playerName.ToString(), "s", "r");
                 isWKey = false;
             }
         }
@@ -123,9 +135,9 @@ public class CharacterMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.D))
         {
             //0.03 secs
-            if(!isWKey)
+            if (!isWKey)
             {
-                Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",key d pressed, rotation.y:"+rotationY+",time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+                logData(navigationType, playerName.ToString(), "d", "p");
                 isWKey = true;
             }
         }
@@ -135,15 +147,33 @@ public class CharacterMovement : MonoBehaviour
             //Release เท่านั้น
             if (isWKey)
             {
-                Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",key d released, rotation.y:"+rotationY+", time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+                logData(navigationType, playerName.ToString(), "d", "r");
                 isWKey = false;
             }
         }
+
+        if (isStop)
+        {
+            StartCoroutine(WaitStop());
+        }
     }
 
-    private void LogPlayerData()
+    IEnumerator WaitStop()
     {
-        Debug.Log("navigationType:"+navigationType+",Player"+ playerName.ToString()+",x:"+this.gameObject.transform.position.x+",z:"+ this.gameObject.transform.position.z+", rotation.y:"+rotationY+", time:"+ System.DateTime.Now.ToString("hh.mm.ss.fff"));
+        yield return new WaitForSeconds(5.0f);
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#endif
+    }
+
+    public void LogPlayerData(string navigationType, string playerName, float positionX, float positionZ, float rotationY, int checkPoint)
+    {
+        Debug.Log(navigationType + "," + playerName + "," + positionX + "," + positionZ + "," + rotationY + "," + System.DateTime.Now.ToString("hh.mm.ss.fff") + ","+checkPoint);
+    }
+
+    public void logData(string navigationType, string playerName, string keyName, string keyStatus)
+    {
+        Debug.Log(navigationType + "," + playerName + "," + keyName + "," + keyStatus + "," + System.DateTime.Now.ToString("hh.mm.ss.fff") + "");
     }
 
     void OnTriggerStay(Collider other)
@@ -152,22 +182,20 @@ public class CharacterMovement : MonoBehaviour
         //bool check
         if (other.gameObject.name == "Checkpoint 1")
         {
-            Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",x:" + this.gameObject.transform.position.x + ",z:" + this.gameObject.transform.position.z + ",CheckPoint:1, time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+            checkPoint = 1;
         }
         if (other.gameObject.name == "Checkpoint 2")
         {
-            Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",x:" + this.gameObject.transform.position.x + ",z:" + this.gameObject.transform.position.z + ",CheckPoint:2, time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+            checkPoint = 2;
         }
         if (other.gameObject.name == "Checkpoint 3")
         {
-            Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",x:" + this.gameObject.transform.position.x + ",z:" + this.gameObject.transform.position.z + ",CheckPoint:3, time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
+            checkPoint = 3;
         }
         if (other.gameObject.name == "Checkpoint 4")
         {
-            Debug.Log("navigationType:"+navigationType+",Player" + playerName.ToString() + ",x:" + this.gameObject.transform.position.x + ",z:" + this.gameObject.transform.position.z + ",CheckPoint:4, time:"+System.DateTime.Now.ToString("hh.mm.ss.fff"));
-            #if UNITY_EDITOR
-            EditorApplication.isPlaying = false;
-            #endif
+            checkPoint = 4;
+            isStop = true;
         }
     }
 }
